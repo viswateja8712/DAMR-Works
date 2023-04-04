@@ -1,0 +1,170 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="damr">
+    
+    <material name="blue">
+        <color rgba="0 0 0.8 1"/>
+    </material>
+
+    <material name="red">
+        <color rgba="0.8 0 0 1"/>
+    </material>
+    
+    <material name="green">
+        <color rgba="0 0.8 0 1"/>
+    </material>
+
+    <material name="grey">
+        <color rgba="0.75 0.75 0.75 1"/>
+    </material>
+
+    <material name="white">
+        <color rgba="1.0 1.0 1.0 1"/>
+    </material>
+
+    <material name="black">
+        <color rgba="0 0 0 1"/>
+    </material>
+
+    <material name="yellow">
+        <color rgba="1 1 0 1"/>
+    </material>
+
+    
+    
+    <xacro:macro name="default_inertial" params="mass">
+        <inertial>
+            <mass value="${mass}" />
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+        </inertial>
+    </xacro:macro> 
+
+    <xacro:macro name="wheel_set" params="num y_reflect x_reflect">
+       <link name="motor_${num}">
+        <visual>
+            <geometry>
+                <cylinder radius="0.016" length="0.082"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.016" rpy="0.0 1.5708 0.0"/>
+            <material name="black"/>
+        
+        </visual>   
+        <collision>
+            <geometry>
+                <cylinder radius="0.016" length="0.082"/>
+            </geometry>
+        <origin xyz="0.0 0.0 -0.016" rpy="0.0 1.5708 0.0"/>
+        </collision>
+        <xacro:default_inertial mass="0.3"/>
+
+       </link>
+
+       <joint name="base_motor${num}_joint" type="fixed">
+            <parent link="base_link"/>
+            <child link="motor_${num}"/>
+            <origin xyz="${y_reflect*0.392} ${-0.224*x_reflect} 0.0" rpy="0.0 0.0 0.0"/>
+       </joint>
+
+       <link name="shaft_${num}">
+        <visual>
+            <geometry>
+                <cylinder radius="0.003" length="0.012"/>
+            </geometry>
+            <origin xyz="${y_reflect*0.006} 0.0 0.0" rpy="0.0 1.5708 0.0"/>
+            <material name="white"/>
+        
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.003" length="0.012"/>
+            </geometry>
+            <origin xyz="${y_reflect*0.006} 0.0 0.0" rpy="0.0 1.5708 0.0"/>
+        </collision>
+       </link>
+
+       <joint name="motor${num}_shaft${num}_joint" type="fixed">
+            <parent link="motor_${num}"/>
+            <child link="shaft_${num}"/>
+            
+            <origin xyz="${y_reflect*0.041} 0 -0.016" rpy="0 0 0"/>
+       </joint>
+       
+
+       <link name="wheel_${num}">
+            <visual>
+                <geometry>
+                    <cylinder radius="0.05" length="0.05"/>
+                </geometry>
+                <origin xyz="${y_reflect*0.025} 0.0 0.0" rpy="0.0 1.5708 0.0"/>
+                <material name="black"/>
+        
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder radius="0.05" length="0.05"/>
+                </geometry>
+                <origin xyz="${y_reflect*0.025} 0.0 0.0" rpy="0.0 1.5708 0.0"/>
+            </collision>
+            <xacro:default_inertial mass="0.4"/>
+       </link>
+
+       <joint name="shaft${num}_wheel${num}_joint" type="continuous">
+            <parent link="shaft_${num}"/>
+            <child link="wheel_${num}"/>
+            <axis xyz="1 0 0"/>
+            <origin xyz="${y_reflect*0.012} 0.0 0.0" rpy="0.0 0.0 0.0"/>
+       </joint>
+
+       <gazebo reference="wheel_${num}">
+        <mu1 value="200.0"/>
+        <mu2 value="100.0"/>
+        <kp value="10000000.0" />
+        <kd value="1.0" />
+        <material>Gazebo/Black</material>
+       </gazebo>
+       <transmission name="wheel_${num}_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <actuator name="wheel_${num}_motor">
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+        <joint name="shaft${num}_wheel${num}_joint">
+            <hardwareInterface>VelocityJointInterface</hardwareInterface>
+        </joint>
+       </transmission>
+    
+    </xacro:macro>
+
+    
+    <link name="body_link">
+    </link>    
+    <link name="base_link">
+        <visual>
+            <geometry>
+                <box size="0.82 0.8 0.2"/>
+            </geometry>
+            <origin xyz="0.0 0.0 0.1" rpy="0.0 0.0 0.0"/>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.82 0.8 0.2"/>
+            </geometry>
+            <origin xyz="0.0 0.0 0.1" rpy="0.0 0.0 0.0"/>            
+        </collision>
+        <xacro:default_inertial mass="10"/>
+    </link>
+    <joint name="base_body_joint" type="fixed">
+     <parent link="body_link"/>
+     <child link="base_link"/>
+     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </joint>
+    
+    
+    
+    
+
+   <xacro:wheel_set num="1" y_reflect="1" x_reflect="1"/>
+   <xacro:wheel_set num="2" y_reflect="-1" x_reflect="1"/>
+   <xacro:wheel_set num="3" y_reflect="1" x_reflect="-1"/>
+   <xacro:wheel_set num="4" y_reflect="-1" x_reflect="-1"/>
+
+</robot>

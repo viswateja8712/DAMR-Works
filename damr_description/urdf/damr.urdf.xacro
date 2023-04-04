@@ -1,0 +1,783 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="damr">
+    
+    <material name="blue">
+        <color rgba="0 0 0.8 1"/>
+    </material>
+
+    <material name="red">
+        <color rgba="0.8 0 0 1"/>
+    </material>
+    
+    <material name="green">
+        <color rgba="0 0.8 0 1"/>
+    </material>
+
+    <material name="grey">
+        <color rgba="0.75 0.75 0.75 1"/>
+    </material>
+
+    <material name="white">
+        <color rgba="1.0 1.0 1.0 1"/>
+    </material>
+
+    <material name="black">
+        <color rgba="0 0 0 1"/>
+    </material>
+
+    <material name="yellow">
+        <color rgba="1 1 0 1"/>
+    </material>
+
+    
+    
+    <xacro:macro name="default_inertial" params="mass">
+        <inertial>
+            <mass value="${mass}" />
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+        </inertial>
+    </xacro:macro> 
+
+    <xacro:macro name="wheel_set" params="num y_reflect x_reflect">
+       <link name="motor_${num}">
+        <visual>
+            <geometry>
+                <cylinder radius="0.016" length="0.082"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.016" rpy="0.0 1.5708 0.0"/>
+            <material name="black"/>
+        
+        </visual>   
+        <collision>
+            <geometry>
+                <cylinder radius="0.016" length="0.082"/>
+            </geometry>
+        <origin xyz="0.0 0.0 -0.016" rpy="0.0 1.5708 0.0"/>
+        </collision>
+        <xacro:default_inertial mass="0.3"/>
+
+       </link>
+
+       <joint name="base_motor${num}_joint" type="fixed">
+            <parent link="base_link"/>
+            <child link="motor_${num}"/>
+            <origin xyz="${y_reflect*0.392} ${-0.224*x_reflect} 0.0" rpy="0.0 0.0 0.0"/>
+       </joint>
+
+       <link name="shaft_${num}">
+        <visual>
+            <geometry>
+                <cylinder radius="0.003" length="0.012"/>
+            </geometry>
+            <origin xyz="${y_reflect*0.006} 0.0 0.0" rpy="0.0 1.5708 0.0"/>
+            <material name="white"/>
+        
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.003" length="0.012"/>
+            </geometry>
+            <origin xyz="${y_reflect*0.006} 0.0 0.0" rpy="0.0 1.5708 0.0"/>
+        </collision>
+       </link>
+
+       <joint name="motor${num}_shaft${num}_joint" type="continuous">
+            <parent link="motor_${num}"/>
+            <child link="shaft_${num}"/>
+            <axis xyz="1 0 0"/>
+            <origin xyz="${y_reflect*0.041} 0 -0.016" rpy="0 0 0"/>
+       </joint>
+       <gazebo reference="shaft_${num}">
+        <mu1 value="200.0"/>
+        <mu2 value="100.0"/>
+        <kp value="10000000.0" />
+        <kd value="1.0" />
+        <material>Gazebo/Black</material>
+       </gazebo>
+       <transmission name="shaft_${num}_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <actuator name="shaft_${num}_motor">
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+        <joint name="motor${num}_shaft${num}_joint">
+            <hardwareInterface>VelocityJointInterface</hardwareInterface>
+        </joint>
+       </transmission>
+
+       <link name="wheel_${num}">
+            <visual>
+                <geometry>
+                    <cylinder radius="0.05" length="0.05"/>
+                </geometry>
+                <origin xyz="${y_reflect*0.025} 0.0 0.0" rpy="0.0 1.5708 0.0"/>
+                <material name="black"/>
+        
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder radius="0.05" length="0.05"/>
+                </geometry>
+                <origin xyz="${y_reflect*0.025} 0.0 0.0" rpy="0.0 1.5708 0.0"/>
+            </collision>
+            <xacro:default_inertial mass="0.4"/>
+       </link>
+
+       <joint name="shaft${num}_wheel${num}_joint" type="fixed">
+            <parent link="shaft_${num}"/>
+            <child link="wheel_${num}"/>
+            <origin xyz="${y_reflect*0.012} 0.0 0.0" rpy="0.0 0.0 0.0"/>
+       </joint>
+    
+    </xacro:macro>
+
+    
+    <link name="body_link">
+    </link>    
+    <link name="base_link">
+        <visual>
+            <geometry>
+                <box size="0.82 0.8 0.2"/>
+            </geometry>
+            <origin xyz="0.0 0.0 0.1" rpy="0.0 0.0 0.0"/>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.82 0.8 0.2"/>
+            </geometry>
+            <origin xyz="0.0 0.0 0.1" rpy="0.0 0.0 0.0"/>            
+        </collision>
+        <xacro:default_inertial mass="10"/>
+    </link>
+    <joint name="base_body_joint" type="fixed">
+     <parent link="body_link"/>
+     <child link="base_link"/>
+     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </joint>
+    
+    
+    <link name="torso">
+        <visual>
+            <geometry>
+                <box size="0.89 0.58 0.28"/>
+            </geometry>
+            <origin xyz="0 0 0.445" rpy="0.0 1.5708 0.0"/>
+            <material name="red"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.89 0.58 0.28"/>
+            </geometry>
+            <origin xyz="0 0 0.445" rpy="0.0 1.5708 0.0"/>
+        </collision>
+        <xacro:default_inertial mass="10"/>
+        
+    </link>
+    <joint name="base_torso" type="fixed">
+        <parent link="base_link"/>
+        <child link="torso"/>
+        <origin xyz="0.0 0.0 0.1" rpy="0.0 0.0 0.0"/>
+    </joint>
+    
+
+   <xacro:wheel_set num="1" y_reflect="1" x_reflect="1"/>
+   <xacro:wheel_set num="2" y_reflect="-1" x_reflect="1"/>
+   <xacro:wheel_set num="3" y_reflect="1" x_reflect="-1"/>
+   <xacro:wheel_set num="4" y_reflect="-1" x_reflect="-1"/>
+    
+    <link name="right_shoulder_support">
+        <visual>
+            <geometry>
+                <box size="0.1 0.15 0.15"/>
+            </geometry>
+            <origin xyz="0.05 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <material name="grey"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.1 0.15 0.15"/>
+            </geometry>
+            <origin xyz="0.05 0.0 0.0" rpy="0.0 0.0 0.0"/>
+        </collision>
+        <xacro:default_inertial mass="0.5"/>
+        
+    </link> 
+
+    <joint name="torso_right_support_joint" type="fixed">
+        <parent link="torso"/>
+        <child link="right_shoulder_support"/>
+        <origin xyz="0.14 0.0 0.69" rpy="0.0 0.0 0.0"/>
+    </joint>
+       
+    <link name="right_hshoulder">
+        <visual>
+            <geometry>
+                <cylinder radius="0.085" length="0.17"/>
+            </geometry>
+            <origin xyz="0.085 0.0 0.0" rpy="0.0 1.5708 0.0"/>
+            <material name="black"/>
+        </visual>      
+        <collision>
+            <geometry>
+                <cylinder radius="0.085" length="0.17"/>
+            </geometry>
+            <origin xyz="0.085 0.0 0.0" rpy="0.0 1.5708 0.0"/>
+        </collision>
+        <xacro:default_inertial mass="4"/>  
+    </link>
+
+    
+    <joint name="right_support_hshoulder_joint" type="fixed">
+        <parent link="right_shoulder_support"/>
+        <child link="right_hshoulder"/>
+        <origin xyz="0.1 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </joint>
+
+    
+    <link name="right_shoulder_roll">
+        <visual>
+            <geometry>
+                <cylinder radius="0.001" length="0.0005"/>
+            </geometry>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <material name="red"/>
+        </visual>
+        <xacro:default_inertial mass="0.001"/>
+        <collision>
+            <geometry>
+                <cylinder radius="0.001" length="0.0005"/>
+            </geometry>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            
+        </collision>
+
+        
+    </link>
+
+    <joint name="right_shoulder_roll_joint" type="continuous">
+        <parent link="right_hshoulder"/>
+        <child link="right_shoulder_roll"/>
+        <axis xyz="1 0 0"/>
+        <origin xyz="0.17 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <transmission name="right_shoulder_roll_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <actuator name="$right_shoulder_motor">
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+        <joint name="right_shoulder_roll_joint">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+    </transmission>
+
+
+    <link name="right_shoulder_pitch">
+        <visual>
+            <geometry>
+                <cylinder radius="0.001" length="0.0005"/>
+            </geometry>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5708 0.0"/>
+            <material name="green"/>
+                                
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.001" length="0.0005"/>
+            </geometry>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5708 0.0"/>
+            
+        </collision>
+        <xacro:default_inertial mass="0.001"/>
+    </link>
+
+    <joint name="right_shoulder_pitch_joint" type="revolute">
+        <parent link="right_shoulder_roll"/>
+        <child link="right_shoulder_pitch"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-1.5708" upper="1.5708" velocity="0.1" effort="1000.0"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="right_shoulder_ball">
+        <visual>
+            <geometry>
+                <sphere radius="0.1"/>       
+            </geometry>
+            <origin xyz="0.1 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <material name="white"/>
+        </visual>
+        <collision>
+            <geometry>
+                <sphere radius="0.1"/>       
+            </geometry>
+            <origin xyz="0.1 0.0 0.0" rpy="0.0 0.0 0.0"/>
+        </collision>
+        <xacro:default_inertial mass="4"/>
+        
+    </link>
+
+    <joint name="right_ball_joint" type="fixed">
+        <parent link="right_shoulder_pitch"/>
+        <child link="right_shoulder_ball"/>
+        <origin xyz="0.00025 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </joint>
+
+    <link name="right_vshoulder">
+        <visual>
+            <origin xyz="0.0 0.0 -0.025" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <cylinder radius="0.085" length="0.05"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <origin xyz="0.0 0.0 -0.025" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <cylinder radius="0.085" length="0.05"/>
+            </geometry>
+        </collision>
+        <xacro:default_inertial mass="4"/>
+    </link>
+
+    <joint name="right_ball_vshoulder_joint" type="fixed">
+        <parent link="right_shoulder_ball"/>
+        <child link="right_vshoulder"/>
+        <origin xyz="0.085 0.0 -0.1" rpy="0.0 0.0 0.0"/>
+    </joint>
+
+    
+    <link name="right_elbow">
+        <visual>
+            <geometry>
+                <box size="0.15 0.112 0.2"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.1" rpy="0.0 0.0 0.0"/>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.15 0.112 0.2"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.1" rpy="0.0 0.0 0.0"/>
+        </collision>
+        <xacro:default_inertial mass="1.1"/>
+    </link>
+
+    <joint name="right_vshoulder_elbow_joint" type="fixed">
+        <parent link="right_vshoulder"/>
+        <child link="right_elbow"/>
+        <origin xyz="0.0 0.0 -0.05" rpy="0.0 0.0 0.0"/>
+                    
+    </joint>
+
+    <link name="right_elbow_joint_shaft">
+        <visual>
+            <geometry>
+                <cylinder radius="0.026" length="0.15"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.013" rpy="0.0 1.5708 0.0"/>
+            <material name="grey"/>
+        </visual>
+    </link>
+
+    <joint name="right_elbow_elbow_shaft_joint" type="revolute">
+        <parent link="right_elbow"/>
+        <child link="right_elbow_joint_shaft"/>
+        <origin xyz="0.0 0.0 -0.21" rpy="0.0 0.0 0.0"/>
+        <axis xyz="1.0 0.0 0.0"/>
+        <limit lower="-1.5708" upper="1.5708" effort="1000.0" velocity="0.1"/>          
+        
+    </joint>
+
+    <link name="right_upper_forearm">
+        <visual>
+            <geometry>
+                <box size="0.12 0.08 0.18"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.09" rpy="0.0 0.0 0.0"/>
+            <material name="black"/>
+            
+        </visual> 
+        <collision>
+            <geometry>
+                <box size="0.12 0.08 0.18"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.09" rpy="0.0 0.0 0.0"/>
+        </collision>
+        <xacro:default_inertial mass="1"/>   
+    </link>
+
+    <joint name="right_elbow_shaft_uforearm_joint" type="fixed">
+        <parent link="right_elbow_joint_shaft"/>
+        <child link="right_upper_forearm"/>
+        
+        <origin xyz="0 0 -0.040" rpy="0 0 0"/>
+    </joint>
+
+    <link name="right_lower_forearm">
+        <visual>
+            <geometry>
+                <box size="0.1 0.052 0.148"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.074" rpy="0.0 0.0 0.0"/>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.1 0.052 0.148"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.074" rpy="0.0 0.0 0.0"/>
+        </collision>
+        <xacro:default_inertial mass="1"/>
+    </link>
+
+    <joint name="right_upper_lower_forearm_joint" type="revolute">
+        <parent link="right_upper_forearm"/>
+        <child link="right_lower_forearm"/>
+        <axis xyz="0 0 1"/>
+        <limit lower="-1.5708" upper="1.5708" velocity="0.10" effort="1000.0"/>
+        <origin xyz="0 0 -0.18" rpy="0 0 0"/>
+    </joint>
+
+    <link name="right_forearm_shaft">
+        <visual>
+            <geometry>
+                <cylinder radius="0.016" length="0.1"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.016" rpy="0.0 1.5708 0.0"/>
+            <material name="grey"/>
+        </visual>
+        
+    </link>
+
+    <joint name="right_lforearm_lforearm_shaft_joint" type="revolute">
+        <parent link="right_lower_forearm"/>
+        <child link="right_forearm_shaft"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.5708" upper="1.5708" velocity="0.1" effort="1000.0"/>
+        <origin xyz="0 0 -0.148" rpy="0 0 0"/>
+    </joint>
+
+    <link name="right_endeff">
+        <visual>
+            <geometry>
+                <box size="0.05 0.04 0.088"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.044" rpy="0.0 0.0 0.0"/>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.05 0.04 0.088"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.044" rpy="0.0 0.0 0.0"/>
+        </collision>
+        <xacro:default_inertial mass="0.5"/>
+        
+    </link>
+
+    <joint name="right_endeff_joint" type="fixed">
+        <parent link="right_forearm_shaft"/>
+        <child link="right_endeff"/>
+        <origin xyz="0.0 0.0 -0.032" rpy="0.0 0.0 0.0"/>
+    </joint>
+    
+    <link name="left_shoulder_support">
+        <visual>
+            <geometry>
+                <box size="0.1 0.15 0.15"/>
+            </geometry>
+            <origin xyz="-0.05 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <material name="grey"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.1 0.15 0.15"/>
+            </geometry>
+            <origin xyz="-0.05 0.0 0.0" rpy="0.0 0.0 0.0"/>
+        </collision>
+        <xacro:default_inertial mass="0.5"/>
+        
+    </link> 
+
+    <joint name="torso_left_support_joint" type="fixed">
+        <parent link="torso"/>
+        <child link="left_shoulder_support"/>
+        <origin xyz="-0.14 0.0 0.69" rpy="0.0 0.0 0.0"/>
+    </joint>
+       
+    <link name="left_hshoulder">
+        <visual>
+            <geometry>
+                <cylinder radius="0.085" length="0.17"/>
+            </geometry>
+            <origin xyz="-0.085 0.0 0.0" rpy="0.0 1.5708 0.0"/>
+            <material name="black"/>
+        </visual>   
+        <collision>
+            <geometry>
+                <cylinder radius="0.085" length="0.17"/>
+            </geometry>
+            <origin xyz="-0.085 0.0 0.0" rpy="0.0 1.5708 0.0"/>
+        </collision>
+        <xacro:default_inertial mass="4"/>     
+    </link>
+
+    
+    <joint name="left_support_hshoulder_joint" type="fixed">
+        <parent link="left_shoulder_support"/>
+        <child link="left_hshoulder"/>
+        <origin xyz="-0.1 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </joint>
+
+    
+    <link name="left_shoulder_roll">
+        <visual>
+            <geometry>
+                <cylinder radius="0.001" length="0.0005"/>
+            </geometry>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <material name="red"/>
+        </visual>
+        <xacro:default_inertial mass="0.001"/>
+        <collision>
+            <geometry>
+                <cylinder radius="0.001" length="0.0005"/>
+            </geometry>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            
+        </collision>
+        
+    </link>
+
+    <joint name="left_shoulder_roll joint" type="revolute">
+        <parent link="left_hshoulder"/>
+        <child link="left_shoulder_roll"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.5708" upper="1.5708" velocity="0.1" effort="1000.0"/>
+        <origin xyz="-0.17 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="left_shoulder_pitch">
+        <visual>
+            <geometry>
+                <cylinder radius="0.001" length="0.0005"/>
+            </geometry>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5708 0.0"/>
+            <material name="green"/>
+                                
+        </visual>
+        <xacro:default_inertial mass="0.001"/>
+        <collision>
+        <geometry>
+                <cylinder radius="0.001" length="0.0005"/>
+            </geometry>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5708 0.0"/>
+            
+        </collision>
+    </link>
+
+    <joint name="left_shoulder_pitch_joint" type="revolute">
+        <parent link="left_shoulder_roll"/>
+        <child link="left_shoulder_pitch"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-1.5708" upper="1.5708" velocity="0.1" effort="1000.0"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="left_shoulder_ball">
+        <visual>
+            <geometry>
+                <sphere radius="0.1"/>       
+            </geometry>
+            <origin xyz="-0.1 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <material name="white"/>
+        </visual>
+        <collision>
+            <geometry>
+                <sphere radius="0.1"/>       
+            </geometry>
+            <origin xyz="-0.1 0.0 0.0" rpy="0.0 0.0 0.0"/>
+        </collision>
+        <xacro:default_inertial mass="4"/>
+        
+    </link>
+
+    <joint name="left_ball_joint" type="fixed">
+        <parent link="left_shoulder_pitch"/>
+        <child link="left_shoulder_ball"/>
+        <origin xyz="-0.00025 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    </joint>
+
+    <link name="left_vshoulder">
+        <visual>
+            <origin xyz="0.0 0.0 -0.025" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <cylinder radius="0.085" length="0.05"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <origin xyz="0.0 0.0 -0.025" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <cylinder radius="0.085" length="0.05"/>
+            </geometry>
+        </collision>
+        <xacro:default_inertial mass="4"/>
+    </link>
+
+    <joint name="left_ball_vshoulder_joint" type="fixed">
+        <parent link="left_shoulder_ball"/>
+        <child link="left_vshoulder"/>
+        <origin xyz="-0.085 0.0 -0.1" rpy="0.0 0.0 0.0"/>
+    </joint>
+
+    
+    <link name="left_elbow">
+        <visual>
+            <geometry>
+                <box size="0.15 0.112 0.2"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.1" rpy="0.0 0.0 0.0"/>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.15 0.112 0.2"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.1" rpy="0.0 0.0 0.0"/>
+        </collision>
+        <xacro:default_inertial mass="1.1"/>
+    </link>
+
+    <joint name="left_vshoulder_elbow_joint" type="fixed">
+        <parent link="left_vshoulder"/>
+        <child link="left_elbow"/>
+        <origin xyz="0.0 0.0 -0.05" rpy="0.0 0.0 0.0"/>
+                    
+    </joint>
+
+    <link name="left_elbow_joint_shaft">
+        <visual>
+            <geometry>
+                <cylinder radius="0.026" length="0.15"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.013" rpy="0.0 1.5708 0.0"/>
+            <material name="grey"/>
+        </visual>
+    </link>
+
+    <joint name="left_elbow_elbow_shaft_joint" type="revolute">
+        <parent link="left_elbow"/>
+        <child link="left_elbow_joint_shaft"/>
+        <origin xyz="0.0 0.0 -0.21" rpy="0.0 0.0 0.0"/>
+        <axis xyz="1.0 0.0 0.0"/>
+        <limit lower="-1.5708" upper="1.5708" effort="1000.0" velocity="0.1"/>          
+        
+    </joint>
+
+    <link name="left_upper_forearm">
+        <visual>
+            <geometry>
+                <box size="0.12 0.08 0.18"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.09" rpy="0.0 0.0 0.0"/>
+            <material name="black"/>
+            
+        </visual>  
+        <collision>
+            <geometry>
+                <box size="0.12 0.08 0.18"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.09" rpy="0.0 0.0 0.0"/>
+        </collision>
+        <xacro:default_inertial mass="1"/>  
+    </link>
+
+    <joint name="left_elbow_shaft_uforearm_joint" type="fixed">
+        <parent link="left_elbow_joint_shaft"/>
+        <child link="left_upper_forearm"/>
+        
+        <origin xyz="0 0 -0.040" rpy="0 0 0"/>
+    </joint>
+
+    <link name="left_lower_forearm">
+        <visual>
+            <geometry>
+                <box size="0.1 0.052 0.148"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.074" rpy="0.0 0.0 0.0"/>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.1 0.052 0.148"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.074" rpy="0.0 0.0 0.0"/>
+        </collision>
+        <xacro:default_inertial mass="1"/>
+    </link>
+
+    <joint name="left_upper_lower_forearm_joint" type="revolute">
+        <parent link="left_upper_forearm"/>
+        <child link="left_lower_forearm"/>
+        <axis xyz="0 0 1"/>
+        <limit lower="-1.5708" upper="1.5708" velocity="0.10" effort="1000.0"/>
+        <origin xyz="0 0 -0.18" rpy="0 0 0"/>
+    </joint>
+
+    <link name="left_forearm_shaft">
+        <visual>
+            <geometry>
+                <cylinder radius="0.016" length="0.1"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.016" rpy="0.0 1.5708 0.0"/>
+            <material name="grey"/>
+        </visual>
+        
+    </link>
+
+    <joint name="left_lforearm_lforearm_shaft_joint" type="revolute">
+        <parent link="left_lower_forearm"/>
+        <child link="left_forearm_shaft"/>
+        <axis xyz="1 0 0"/>
+        <limit lower="-1.5708" upper="1.5708" velocity="0.1" effort="1000.0"/>
+        <origin xyz="0 0 -0.148" rpy="0 0 0"/>
+    </joint>
+
+    <link name="left_endeff">
+        <visual>
+            <geometry>
+                <box size="0.05 0.04 0.088"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.044" rpy="0.0 0.0 0.0"/>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.05 0.04 0.088"/>
+            </geometry>
+            <origin xyz="0.0 0.0 -0.044" rpy="0.0 0.0 0.0"/>
+        </collision>
+        <xacro:default_inertial mass="0.5"/>
+        
+    </link>
+
+    <joint name="left_endeff_joint" type="fixed">
+        <parent link="left_forearm_shaft"/>
+        <child link="left_endeff"/>
+        <origin xyz="0.0 0.0 -0.032" rpy="0.0 0.0 0.0"/>
+    </joint>
+
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+            <robotNamespace>/damr</robotNamespace>
+        </plugin>
+    </gazebo>
+
+</robot>
+
+
+
+

@@ -1,0 +1,19 @@
+<launch>
+  <arg name="model" default="$(find damr_description)/urdf/damr.urdf.xacro"/>
+  <arg name="rvizconfig" default="$(find damr_description)/rviz_config/damr.rviz" />
+
+  <include file="$(find damr_description)/launch/damr_gazebo.launch">
+    <arg name="model" value="$(arg model)" />
+  </include>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" />
+
+  
+  <rosparam command="load"
+            file="$(find damr_description)/config/damr_sample_config.yaml"
+            ns="damr_head_controller" />
+
+  <node name="damr_controller_spawner" pkg="controller_manager" type="spawner"
+    args="damr_head_controller
+          --shutdown-timeout 3"/>
+</launch>
